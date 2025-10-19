@@ -1,0 +1,42 @@
+# Create a file with the current date and time
+echo $(date) > File.txt
+cat File.txt
+
+# generate RSA private key
+openssl genrsa -out key.pem 2048
+
+# generate RSA public key
+openssl rsa -pubout -in key.pem -out public_key.pem
+
+# generate ECC private key
+# openssl ecparam -name secp256k1 -genkey -noout -out key.pem
+
+# generate ECC public key
+# openssl ec -in key.pem -pubout -out public_key.pem
+
+# encrypt with public key / decrypt with private RSA key
+openssl pkeyutl -encrypt -inkey public_key.pem -pubin -in File.txt -out EncryptedFile.encrypted
+openssl pkeyutl -decrypt -inkey key.pem -in EncryptedFile.encrypted -out DecryptedFile.txt
+cat DecryptedFile.txt
+
+# sign a file and verify its signature
+openssl dgst -sha256 -sign key.pem -out File.sig File.txt
+openssl dgst -sha256 -verify public_key.pem -signature File.sig File.txt
+
+# sign file and verify signature (pkeyutl - openssl 3.0)
+# openssl pkeyutl -sign -rawin -inkey key.pem -in File.txt -out File.sig
+# openssl pkeyutl -verify -rawin -pubin -inkey public_key.pem -in File.txt -sigfile File.sig
+
+# sign file and verify signature (pkeyutl - openssl 1.1.1)
+# openssl pkeyutl -sign -inkey key.pem -in File.txt -out File.sig
+# openssl pkeyutl -verify -pubin -inkey public_key.pem -in File.txt -sigfile File.sig
+
+# convert binary signature to base64
+openssl base64 -in File.sig -out File.sig.base64
+cat File.sig.base64
+
+# convert base64 back to binary signature
+openssl base64 -d -in File.sig.base64 -out File.sig
+
+# verify signature
+openssl dgst -sha256 -verify public_key.pem -signature File.sig File.txt
