@@ -1,0 +1,31 @@
+#
+# Encrypt and decrypt files
+# using symmetric keys
+#
+
+# create a test file
+echo $(date) > File.txt
+cat File.txt
+
+## Encrypting and Decrypting data using symmetric encryption ##
+#openssl aes-256-cbc -pbkdf2 -in File.txt -out EncryptedFile.encrypted
+#openssl aes-256-cbc -pbkdf2 -d -in EncryptedFile.encrypted -out DecryptedFile.txt
+#cat DecryptedFile.txt
+
+# using a key file (KFILE ARGUMENT)
+#openssl rand 256 > keyfile.key
+#openssl aes-256-cbc -pbkdf2 -in File.txt -out EncryptedFile.encrypted -kfile keyfile.key
+#openssl aes-256-cbc -pbkdf2 -d -in EncryptedFile.encrypted -out DecryptedFile.txt -kfile keyfile.key
+#cat DecryptedFile.txt
+
+# using a key file (PASS PHRASE ARGUMENTS)
+openssl rand -out keyfile.base64.key -base64 256
+openssl aes-256-cbc -pbkdf2 -in File.txt -out EncryptedFile.encrypted -kfile keyfile.base64.key
+openssl aes-256-cbc -pbkdf2 -d -in EncryptedFile.encrypted -out DecryptedFile.txt -kfile keyfile.base64.key
+cat DecryptedFile.txt
+
+# using a key file (PASS PHRASE ARGUMENTS)
+#openssl rand -out keyfile.base64.key -base64 256
+openssl enc -pbkdf2 -in File.txt -out EncryptedFile.encrypted -e -aes256 -pass file:keyfile.base64.key
+openssl enc -pbkdf2 -in EncryptedFile.encrypted -out DecryptedFile.txt -d -aes256 -pass file:keyfile.base64.key
+cat DecryptedFile.txt
